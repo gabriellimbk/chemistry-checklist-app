@@ -1998,6 +1998,7 @@ function createCardElement(card, board, options = {}) {
       masteryState.delete(sectionKey);
     }
     updateProgress();
+    recordTopicInteractionOnce();
     syncCardMastery(sectionKey, masteryInput.checked);
   });
 

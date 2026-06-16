@@ -151,14 +151,22 @@
       statusPanel.classList.add("is-visible");
     }
     function hideStatus() { statusPanel.classList.remove("is-visible"); }
+    function rowTime(row) {
+      const time = Date.parse(row && row.updated_at || "");
+      return Number.isFinite(time) ? time : 0;
+    }
     function effectiveUnlock(topic) {
       const topicId = topic.folder;
-      const classOverride = unlockRows.find((row) =>
-        row.scope_type === "class" && row.class_name === studentProfile.class_name && row.topic_id === topicId
+      const candidates = unlockRows.filter((row) =>
+        row.topic_id === topicId &&
+        (
+          row.scope_type === "global" ||
+          (row.scope_type === "class" && row.class_name === studentProfile.class_name)
+        )
       );
-      if (classOverride) return Boolean(classOverride.is_unlocked);
-      const globalSetting = unlockRows.find((row) => row.scope_type === "global" && row.topic_id === topicId);
-      return globalSetting ? Boolean(globalSetting.is_unlocked) : false;
+      if (!candidates.length) return false;
+      const latest = candidates.sort((a, b) => rowTime(b) - rowTime(a))[0];
+      return Boolean(latest.is_unlocked);
     }
     function getTopicProgress(topic) {
       let saved = null;

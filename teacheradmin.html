@@ -182,14 +182,22 @@
       if (scope() === "class") query.set("className", selectedClassName());
       return `${encodeURIComponent(topic.folder).replace(/%2F/g, "/")}/index.html?${query.toString()}`;
     }
-    function unlockSetting(topic, mode = "effective") {
+    function rowTime(row) {
+      const time = Date.parse(row && row.updated_at || "");
+      return Number.isFinite(time) ? time : 0;
+    }
+    function unlockSetting(topic) {
       const topicId = topic.folder;
-      if (scope() === "class") {
-        const classRow = teacherData.unlockRows.find((row) => row.scope_type === "class" && row.class_name === selectedClassName() && row.topic_id === topicId);
-        if (classRow || mode === "direct") return classRow ? Boolean(classRow.is_unlocked) : false;
-      }
-      const globalRow = teacherData.unlockRows.find((row) => row.scope_type === "global" && row.topic_id === topicId);
-      return globalRow ? Boolean(globalRow.is_unlocked) : false;
+      const candidates = teacherData.unlockRows.filter((row) =>
+        row.topic_id === topicId &&
+        (
+          row.scope_type === "global" ||
+          (scope() === "class" && row.scope_type === "class" && row.class_name === selectedClassName())
+        )
+      );
+      if (!candidates.length) return false;
+      const latest = candidates.sort((a, b) => rowTime(b) - rowTime(a))[0];
+      return Boolean(latest.is_unlocked);
     }
     function openSidebar() { document.body.classList.add("sidebar-open"); }
     function closeSidebar() { document.body.classList.remove("sidebar-open"); }

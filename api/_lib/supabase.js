@@ -70,7 +70,7 @@ async function getAllStudents() {
 
 async function getUnlockRows() {
   const rows = await supabaseRequest(
-    "chemistry_checklist_app_topic_unlocks?select=scope_type,class_name,topic_id,is_unlocked"
+    "chemistry_checklist_app_topic_unlocks?select=scope_type,class_name,topic_id,is_unlocked,updated_at"
   );
   return Array.isArray(rows) ? rows : [];
 }
