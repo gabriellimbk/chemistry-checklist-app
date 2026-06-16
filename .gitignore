@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+ID and Class.csv
+supabase_students_import.csv
+node_modules/
+.DS_Store
+Thumbs.db
