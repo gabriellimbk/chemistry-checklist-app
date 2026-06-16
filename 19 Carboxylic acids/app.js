@@ -28,9 +28,115 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260615r-carboxylic-questions";
+const assetVersion = "20260616r-v2-teacher-student";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom:";
+const studentAccessStorageKey = "chemistry-checklist-v2.studentAccessId";
+const accessParams = new URLSearchParams(window.location.search);
+const teacherMode = accessParams.get("teacher") === "1";
+const teacherScope = accessParams.get("scope") === "class" ? "class" : "all";
+const teacherClassName = accessParams.get("className") || "";
+let studentAccessId = "";
+let topicInteractionRecorded = false;
+let teacherTopicInteractedCount = 0;
+const teacherCardStats = new Map();
+
+function getTopicId() {
+  return topicData && (topicData.folderName || topicData.code || topicData.title) || "";
+}
+
+async function apiJson(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed with status ${response.status}`);
+  }
+  return data;
+}
+
+async function loadStudentTopicState() {
+  if (!studentAccessId || teacherMode || !getTopicId()) {
+    return;
+  }
+  try {
+    const data = await apiJson(`/api/student-topic-state?student_id=${encodeURIComponent(studentAccessId)}&topic_id=${encodeURIComponent(getTopicId())}`);
+    if (Array.isArray(data.masteredCardIds)) {
+      masteryState.clear();
+      data.masteredCardIds.forEach((sectionKey) => {
+        if (typeof sectionKey === "string") {
+          masteryState.add(sectionKey);
+        }
+      });
+    }
+    topicInteractionRecorded = Boolean(data.interacted);
+  } catch (error) {
+    console.warn("Unable to load student topic state", error);
+  }
+}
+
+async function recordTopicInteractionOnce() {
+  if (teacherMode || !studentAccessId || topicInteractionRecorded || !getTopicId()) {
+    return;
+  }
+  topicInteractionRecorded = true;
+  try {
+    await apiJson("/api/record-topic-interaction", {
+      method: "POST",
+      body: JSON.stringify({ student_id: studentAccessId, topic_id: getTopicId() })
+    });
+  } catch (error) {
+    console.warn("Unable to record topic interaction", error);
+  }
+}
+
+async function syncCardMastery(sectionKey, isMastered) {
+  if (teacherMode || !studentAccessId || !getTopicId()) {
+    return;
+  }
+  try {
+    await apiJson("/api/set-card-mastery", {
+      method: "POST",
+      body: JSON.stringify({
+        student_id: studentAccessId,
+        topic_id: getTopicId(),
+        card_id: sectionKey,
+        is_mastered: isMastered
+      })
+    });
+  } catch (error) {
+    console.warn("Unable to save mastery state", error);
+  }
+}
+
+async function loadTeacherTopicStats() {
+  if (!teacherMode || !getTopicId()) {
+    return;
+  }
+  try {
+    const query = new URLSearchParams({ topic_id: getTopicId(), scope: teacherScope });
+    if (teacherScope === "class") {
+      query.set("class_name", teacherClassName);
+    }
+    const data = await apiJson(`/api/teacher-topic-stats?${query.toString()}`);
+    teacherTopicInteractedCount = Number(data.interacted) || 0;
+    teacherCardStats.clear();
+    Object.entries(data.cards || {}).forEach(([sectionKey, stats]) => {
+      teacherCardStats.set(sectionKey, {
+        mastered: Number(stats.mastered) || 0,
+        interacted: Number(stats.interacted) || teacherTopicInteractedCount
+      });
+    });
+  } catch (error) {
+    console.warn("Unable to load teacher stats", error);
+  }
+}
+
 const boardZoomLevels = [0.12, 0.18, 0.25, 0.35, 0.5, 0.75, 1];
 let boardZoomIndex = boardZoomLevels.length - 1;
 let currentStaticBoardWidth = 1440;
@@ -1860,9 +1966,20 @@ function createCardElement(card, board, options = {}) {
   const audioButton = article.querySelector(".audio-button");
   const highlightButton = article.querySelector(".highlight-button");
 
+  if (teacherMode) {
+    masteryInput.disabled = true;
+    const stats = teacherCardStats.get(sectionKey) || { mastered: 0, interacted: teacherTopicInteractedCount };
+    const badge = document.createElement("span");
+    badge.className = "teacher-stat-badge";
+    badge.textContent = `${stats.mastered} / ${stats.interacted}`;
+    badge.setAttribute("aria-label", `${stats.mastered} of ${stats.interacted} students marked this flipcard`);
+    article.appendChild(badge);
+  }
+
   flipTrigger.addEventListener("click", () => {
     const isFlipped = article.classList.toggle("is-flipped");
     flipTrigger.setAttribute("aria-pressed", String(isFlipped));
+    recordTopicInteractionOnce();
 
     if (isFlipped && audioState[sectionKey]) {
       playSectionAudio(sectionKey);
@@ -1870,6 +1987,10 @@ function createCardElement(card, board, options = {}) {
   });
 
   masteryInput.addEventListener("change", () => {
+    if (teacherMode) {
+      masteryInput.checked = masteryState.has(sectionKey);
+      return;
+    }
     article.classList.toggle("mastered", masteryInput.checked);
     if (masteryInput.checked) {
       masteryState.add(sectionKey);
@@ -1877,6 +1998,7 @@ function createCardElement(card, board, options = {}) {
       masteryState.delete(sectionKey);
     }
     updateProgress();
+    syncCardMastery(sectionKey, masteryInput.checked);
   });
 
   extensionButton.addEventListener("click", (event) => {
@@ -2409,7 +2531,14 @@ async function init() {
   topicData = await loadTopicData();
   document.title = `${topicData.title} Summary Map`;
   document.getElementById("topicTitle").textContent = topicData.title;
+  studentAccessId = sessionStorage.getItem(studentAccessStorageKey) || "";
   loadStoredProgress();
+  if (!teacherMode && studentAccessId) {
+    await loadStudentTopicState();
+  }
+  if (teacherMode) {
+    await loadTeacherTopicStats();
+  }
   loadStoredBoardZoom();
   syncBoardFromHash();
   await Promise.all(topicData.boards.map((board) => loadExtensionQuestions(board)));

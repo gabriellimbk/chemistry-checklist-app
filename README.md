@@ -1,19 +1,28 @@
 # V2 Summary App - Teacher + Student
 
-Standalone static build of the chemistry summary map app.
+Standalone build of the chemistry summary map app with a Supabase-backed student/teacher layer.
 
 This V2 copy is separate from the currently deployed pilot version. It is intended to be the working folder for the newer teacher/student version and does not include generated audio.
 
 ## Contents
 
-- `index.html` is the main hub app.
+- `index.html` is the student hub app.
+- `teacheradmin.html` is the teacher console served at `/teacheradmin`.
+- `api/` contains the Vercel serverless routes for Supabase access.
+- `topics.js` is the shared topic list used by the student and teacher shells.
 - Each topic folder contains its own static app files, topic data, images, and extension questions.
 - `school crest watermark.png` is used for downloadable question-board PDFs.
 - `.env` and `.env.example` have been copied into this folder for local reference.
 
 ## Preview Locally
 
-Run a local static server from this folder:
+Use Vercel locally if you need the Supabase-backed API routes:
+
+```powershell
+vercel dev
+```
+
+For static-only layout checks, a simple local server is enough:
 
 ```powershell
 python -m http.server 8000
@@ -33,4 +42,21 @@ No audio media files are included. Topic cards have empty `audioFile` values, so
 
 Do not upload `.env` or API keys. The `.gitignore` keeps `.env` private while allowing `.env.example` to be tracked.
 
-Mastery progress and highlights are stored in the user's browser `localStorage`.
+Required Vercel environment variables:
+
+```text
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+TEACHER_ADMIN_PASSWORD
+TEACHER_SESSION_SECRET
+```
+
+Student access is validated through `?id=<student_id>` against the Supabase student table. The ID is removed from the visible URL after validation.
+
+Teacher access is available at:
+
+```text
+/teacheradmin
+```
+
+Flipcard mastery is stored in Supabase for the teacher statistics. Highlights remain local to the user's browser.
