@@ -1,5 +1,6 @@
 const { methodNotAllowed, readJson, sendError, sendJson } = require("./_lib/http");
 const { getStudent, supabaseRequest, SupabaseApiError } = require("./_lib/supabase");
+const { getStudentIdFromCookie } = require("./_lib/student-auth");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -8,7 +9,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = await readJson(req);
-    const studentId = String(body.student_id || "").trim();
+    const studentId = String(body.student_id || getStudentIdFromCookie(req) || "").trim();
     const topicId = String(body.topic_id || "").trim();
     const cardId = String(body.card_id || "").trim();
     const isMastered = Boolean(body.is_mastered);

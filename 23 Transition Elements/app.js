@@ -28,15 +28,13 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260616r-v2-question-grammar";
+const assetVersion = "20260620r-student-entry-cookie";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom:";
-const studentAccessStorageKey = "chemistry-checklist-v2.studentAccessId";
 const accessParams = new URLSearchParams(window.location.search);
 const teacherMode = accessParams.get("teacher") === "1";
 const teacherScope = accessParams.get("scope") === "class" ? "class" : "all";
 const teacherClassName = accessParams.get("className") || "";
-let studentAccessId = "";
 let topicInteractionRecorded = false;
 let teacherTopicInteractedCount = 0;
 const teacherCardStats = new Map();
@@ -61,11 +59,11 @@ async function apiJson(path, options = {}) {
 }
 
 async function loadStudentTopicState() {
-  if (!studentAccessId || teacherMode || !getTopicId()) {
+  if (teacherMode || !getTopicId()) {
     return;
   }
   try {
-    const data = await apiJson(`/api/student-topic-state?student_id=${encodeURIComponent(studentAccessId)}&topic_id=${encodeURIComponent(getTopicId())}`);
+    const data = await apiJson(`/api/student-topic-state?topic_id=${encodeURIComponent(getTopicId())}`);
     if (Array.isArray(data.masteredCardIds)) {
       masteryState.clear();
       data.masteredCardIds.forEach((sectionKey) => {
@@ -81,14 +79,14 @@ async function loadStudentTopicState() {
 }
 
 async function recordTopicInteractionOnce() {
-  if (teacherMode || !studentAccessId || topicInteractionRecorded || !getTopicId()) {
+  if (teacherMode || topicInteractionRecorded || !getTopicId()) {
     return;
   }
   topicInteractionRecorded = true;
   try {
     await apiJson("/api/record-topic-interaction", {
       method: "POST",
-      body: JSON.stringify({ student_id: studentAccessId, topic_id: getTopicId() })
+      body: JSON.stringify({ topic_id: getTopicId() })
     });
   } catch (error) {
     console.warn("Unable to record topic interaction", error);
@@ -96,14 +94,13 @@ async function recordTopicInteractionOnce() {
 }
 
 async function syncCardMastery(sectionKey, isMastered) {
-  if (teacherMode || !studentAccessId || !getTopicId()) {
+  if (teacherMode || !getTopicId()) {
     return;
   }
   try {
     await apiJson("/api/set-card-mastery", {
       method: "POST",
       body: JSON.stringify({
-        student_id: studentAccessId,
         topic_id: getTopicId(),
         card_id: sectionKey,
         is_mastered: isMastered
@@ -2532,9 +2529,8 @@ async function init() {
   topicData = await loadTopicData();
   document.title = `${topicData.title} Summary Map`;
   document.getElementById("topicTitle").textContent = topicData.title;
-  studentAccessId = sessionStorage.getItem(studentAccessStorageKey) || "";
   loadStoredProgress();
-  if (!teacherMode && studentAccessId) {
+  if (!teacherMode) {
     await loadStudentTopicState();
   }
   if (teacherMode) {

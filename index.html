@@ -101,12 +101,11 @@
     </div>
   </section>
 
-  <script src="topics.js?v=20260616r-v2"></script>
+  <script src="topics.js?v=20260620r-student-entry-cookie"></script>
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
     const progressStoragePrefix = "summary-map-progress:";
-    const topicPageVersion = "20260616r-v2-teacher-student";
-    const studentAccessStorageKey = "chemistry-checklist-v2.studentAccessId";
+    const topicPageVersion = "20260620r-student-entry-cookie";
     const studentClassStorageKey = "chemistry-checklist-v2.studentClass";
 
     const menuButton = document.getElementById("menuButton");
@@ -142,8 +141,7 @@
       history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     }
     function getRequestedStudentId() {
-      const fromUrl = new URLSearchParams(window.location.search).get("id");
-      return (fromUrl || sessionStorage.getItem(studentAccessStorageKey) || "").trim();
+      return (new URLSearchParams(window.location.search).get("id") || "").trim();
     }
     function showStatus(title, text) {
       statusTitle.textContent = title;
@@ -233,18 +231,13 @@
     }
     async function initStudentApp() {
       const studentId = getRequestedStudentId();
-      if (!studentId) {
-        showStatus("Access required", "Open this app from Canvas using your assigned student link.");
-        return;
-      }
       try {
-        const data = await apiJson(`/api/student-session?id=${encodeURIComponent(studentId)}`);
+        const data = await apiJson(studentId ? `/api/student-session?id=${encodeURIComponent(studentId)}` : "/api/student-session");
         studentProfile = data.student;
         unlockRows = Array.isArray(data.unlockRows) ? data.unlockRows : [];
-        sessionStorage.setItem(studentAccessStorageKey, studentProfile.student_id);
         sessionStorage.setItem(studentClassStorageKey, studentProfile.class_name);
         cleanCanvasIdFromUrl();
-        studentMeta.textContent = `${studentProfile.class_name} · ${studentProfile.student_id}`;
+        studentMeta.textContent = studentProfile.class_name;
         renderTopicList();
         const requestedTopic = topicFromHash();
         const firstTopic = requestedTopic && effectiveUnlock(requestedTopic) ? requestedTopic : topics.find(effectiveUnlock);
@@ -255,9 +248,9 @@
           showStatus("No topics unlocked", "Your teacher has not unlocked any topics yet.");
         }
       } catch (error) {
-        sessionStorage.removeItem(studentAccessStorageKey);
         sessionStorage.removeItem(studentClassStorageKey);
-        showStatus("Access denied", error.message || "This student ID is not allowed.");
+        const denied = new URLSearchParams(window.location.search).get("access") === "denied";
+        showStatus(denied ? "Access denied" : "Access required", denied ? "This student ID is not allowed." : "Open this app from Canvas using your assigned student link.");
       }
     }
 

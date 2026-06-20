@@ -1,5 +1,6 @@
 const { methodNotAllowed, sendError, sendJson } = require("./_lib/http");
 const { eq, getStudent, supabaseRequest, SupabaseApiError } = require("./_lib/supabase");
+const { getStudentIdFromCookie } = require("./_lib/student-auth");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -8,7 +9,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
-    const studentId = (url.searchParams.get("student_id") || "").trim();
+    const studentId = (url.searchParams.get("student_id") || getStudentIdFromCookie(req) || "").trim();
     const topicId = (url.searchParams.get("topic_id") || "").trim();
     if (!studentId || !topicId) {
       return sendError(res, 400, "student_id and topic_id are required");

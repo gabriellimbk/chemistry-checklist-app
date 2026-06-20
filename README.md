@@ -51,7 +51,21 @@ TEACHER_ADMIN_PASSWORD
 TEACHER_SESSION_SECRET
 ```
 
-Student access is validated through `?id=<student_id>` against the Supabase student table. The ID is removed from the visible URL after validation.
+Optional Vercel environment variable:
+
+```text
+STUDENT_SESSION_SECRET
+```
+
+If `STUDENT_SESSION_SECRET` is blank, `TEACHER_SESSION_SECRET` is used to sign student access cookies.
+
+Canvas student links should use:
+
+```text
+/api/student-entry?id=${Canvas.user.loginId}
+```
+
+The entry route validates the student ID against Supabase, stores a signed HttpOnly cookie, and redirects to `/` so the student ID is not left visible in the app URL. The older `/?id=<student_id>` path still works as a fallback and also cleans the visible URL after validation.
 
 Teacher access is available at:
 
