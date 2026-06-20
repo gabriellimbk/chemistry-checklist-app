@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260620r-student-entry-cookie";
+const assetVersion = "20260620r-topic-names-teacher-checkbox";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -1964,7 +1964,6 @@ function createCardElement(card, board, options = {}) {
   const highlightButton = article.querySelector(".highlight-button");
 
   if (teacherMode) {
-    masteryInput.disabled = true;
     const stats = teacherCardStats.get(sectionKey) || { mastered: 0, interacted: teacherTopicInteractedCount };
     const badge = document.createElement("span");
     badge.className = "teacher-stat-badge";
@@ -1985,7 +1984,7 @@ function createCardElement(card, board, options = {}) {
 
   masteryInput.addEventListener("change", () => {
     if (teacherMode) {
-      masteryInput.checked = masteryState.has(sectionKey);
+      article.classList.toggle("mastered", masteryInput.checked);
       return;
     }
     article.classList.toggle("mastered", masteryInput.checked);
