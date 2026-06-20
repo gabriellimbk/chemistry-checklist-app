@@ -28,9 +28,9 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260620r-topic-names-teacher-checkbox";
+const assetVersion = "20260620r-default-zoom-75";
 const progressStoragePrefix = "summary-map-progress:";
-const boardZoomStoragePrefix = "summary-map-board-zoom:";
+const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
 const teacherMode = accessParams.get("teacher") === "1";
 const teacherScope = accessParams.get("scope") === "class" ? "class" : "all";
@@ -135,7 +135,7 @@ async function loadTeacherTopicStats() {
 }
 
 const boardZoomLevels = [0.12, 0.18, 0.25, 0.35, 0.5, 0.75, 1];
-let boardZoomIndex = boardZoomLevels.length - 1;
+let boardZoomIndex = boardZoomLevels.indexOf(0.75);
 let currentStaticBoardWidth = 1440;
 let currentStaticBoardHeight = 900;
 let boardZoomLabel;
