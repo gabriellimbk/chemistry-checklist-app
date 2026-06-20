@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260620r-default-zoom-75";
+const assetVersion = "20260620r-teacher-local-mastery";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -641,7 +641,8 @@ function getBoardLayout(board) {
 
 function getProgressStorageKey() {
   const topicKey = topicData && (topicData.folderName || topicData.code || topicData.title);
-  return `${progressStoragePrefix}${topicKey || "unknown-topic"}`;
+  const teacherKey = teacherMode ? `teacher-demo:${teacherScope}:${teacherClassName || "all"}:` : "";
+  return `${progressStoragePrefix}${teacherKey}${topicKey || "unknown-topic"}`;
 }
 
 function getProgressTotal() {
@@ -1983,10 +1984,6 @@ function createCardElement(card, board, options = {}) {
   });
 
   masteryInput.addEventListener("change", () => {
-    if (teacherMode) {
-      article.classList.toggle("mastered", masteryInput.checked);
-      return;
-    }
     article.classList.toggle("mastered", masteryInput.checked);
     if (masteryInput.checked) {
       masteryState.add(sectionKey);
@@ -1994,8 +1991,10 @@ function createCardElement(card, board, options = {}) {
       masteryState.delete(sectionKey);
     }
     updateProgress();
-    recordTopicInteractionOnce();
-    syncCardMastery(sectionKey, masteryInput.checked);
+    if (!teacherMode) {
+      recordTopicInteractionOnce();
+      syncCardMastery(sectionKey, masteryInput.checked);
+    }
   });
 
   extensionButton.addEventListener("click", (event) => {
