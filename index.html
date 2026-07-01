@@ -25,7 +25,7 @@
       background: radial-gradient(circle at top, rgba(255,255,255,0.8), transparent 36%), linear-gradient(180deg, #ede7dc 0%, var(--paper) 100%);
     }
     button { font: inherit; }
-    .topic-frame { display: block; width: 100%; height: 100vh; border: 0; background: var(--paper); }
+    .topic-frame { display: block; width: 100%; height: 100vh; height: 100dvh; border: 0; background: var(--paper); }
     .menu-button {
       position: fixed; z-index: 20; top: 16px; left: 16px; width: 46px; height: 46px;
       border: 1px solid rgba(16,16,16,0.16); border-radius: 14px; background: rgba(255,255,255,0.92);
@@ -105,7 +105,7 @@
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
     const progressStoragePrefix = "summary-map-progress:";
-    const topicPageVersion = "20260620r-teacher-local-mastery";
+    const topicPageVersion = "20260701r-ipad-top-inset";
     const studentClassStorageKey = "chemistry-checklist-v2.studentClass";
 
     const menuButton = document.getElementById("menuButton");
