@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Teacher Console | Chemistry Summary Maps</title>
+  <title>Teacher Console | Chemistry Checklist</title>
   <style>
     :root {
       --paper: #f5f1ea;
@@ -104,7 +104,7 @@
     </div>
     <nav class="topic-list" id="topicList" aria-label="Topics"></nav>
   </aside>
-  <iframe class="topic-frame" id="topicFrame" title="Selected summary map"></iframe>
+  <iframe class="topic-frame" id="topicFrame" title="Selected chemistry checklist"></iframe>
 
   <section class="modal is-visible" id="loginModal" aria-label="Teacher login">
     <div class="dialog">
@@ -144,7 +144,7 @@
   <script src="topics.js?v=20260620r-default-zoom-75"></script>
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
-    const topicPageVersion = "20260701r-ipad-top-inset";
+    const topicPageVersion = "20260702r-checklist-labels";
     const menuButton = document.getElementById("menuButton");
     const closeButton = document.getElementById("closeButton");
     const scrim = document.getElementById("scrim");
