@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260702r-checklist-labels";
+const assetVersion = "20260702r-student-persistence-fix";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -58,12 +58,37 @@ async function apiJson(path, options = {}) {
   return data;
 }
 
+function getStudentSessionId() {
+  if (teacherMode) {
+    return "";
+  }
+  try {
+    const parentId = window.parent && window.parent !== window && window.parent.__CHEMISTRY_CHECKLIST_STUDENT_ID;
+    if (parentId) {
+      return String(parentId).trim();
+    }
+  } catch (error) {
+    // Cross-origin or restricted parent access; fall through to sessionStorage.
+  }
+  try {
+    return String(sessionStorage.getItem("chemistry-checklist-v2.studentId") || "").trim();
+  } catch (error) {
+    return "";
+  }
+}
+
+function withStudentId(payload = {}) {
+  const studentId = getStudentSessionId();
+  return studentId ? { ...payload, student_id: studentId } : payload;
+}
+
 async function loadStudentTopicState() {
   if (teacherMode || !getTopicId()) {
     return;
   }
   try {
-    const data = await apiJson(`/api/student-topic-state?topic_id=${encodeURIComponent(getTopicId())}`);
+    const query = new URLSearchParams(withStudentId({ topic_id: getTopicId() }));
+    const data = await apiJson(`/api/student-topic-state?${query.toString()}`);
     if (Array.isArray(data.masteredCardIds)) {
       masteryState.clear();
       data.masteredCardIds.forEach((sectionKey) => {
@@ -86,7 +111,7 @@ async function recordTopicInteractionOnce() {
   try {
     await apiJson("/api/record-topic-interaction", {
       method: "POST",
-      body: JSON.stringify({ topic_id: getTopicId() })
+      body: JSON.stringify(withStudentId({ topic_id: getTopicId() }))
     });
   } catch (error) {
     console.warn("Unable to record topic interaction", error);
@@ -100,11 +125,11 @@ async function syncCardMastery(sectionKey, isMastered) {
   try {
     await apiJson("/api/set-card-mastery", {
       method: "POST",
-      body: JSON.stringify({
+      body: JSON.stringify(withStudentId({
         topic_id: getTopicId(),
         card_id: sectionKey,
         is_mastered: isMastered
-      })
+      }))
     });
   } catch (error) {
     console.warn("Unable to save mastery state", error);

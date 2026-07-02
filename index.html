@@ -105,8 +105,9 @@
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
     const progressStoragePrefix = "summary-map-progress:";
-    const topicPageVersion = "20260702r-checklist-labels";
+    const topicPageVersion = "20260702r-student-persistence-fix";
     const studentClassStorageKey = "chemistry-checklist-v2.studentClass";
+    const studentIdStorageKey = "chemistry-checklist-v2.studentId";
 
     const menuButton = document.getElementById("menuButton");
     const closeButton = document.getElementById("closeButton");
@@ -234,6 +235,8 @@
       try {
         const data = await apiJson(studentId ? `/api/student-session?id=${encodeURIComponent(studentId)}` : "/api/student-session");
         studentProfile = data.student;
+        window.__CHEMISTRY_CHECKLIST_STUDENT_ID = studentProfile.student_id;
+        sessionStorage.setItem(studentIdStorageKey, studentProfile.student_id);
         unlockRows = Array.isArray(data.unlockRows) ? data.unlockRows : [];
         sessionStorage.setItem(studentClassStorageKey, studentProfile.class_name);
         cleanCanvasIdFromUrl();
@@ -249,6 +252,8 @@
         }
       } catch (error) {
         sessionStorage.removeItem(studentClassStorageKey);
+        sessionStorage.removeItem(studentIdStorageKey);
+        window.__CHEMISTRY_CHECKLIST_STUDENT_ID = "";
         const denied = new URLSearchParams(window.location.search).get("access") === "denied";
         showStatus(denied ? "Access denied" : "Access required", denied ? "This student ID is not allowed." : "Open this app from Canvas using your assigned student link.");
       }
