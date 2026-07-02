@@ -20,15 +20,32 @@ module.exports = async function handler(req, res) {
       return sendError(res, 403, "Student ID is not allowed");
     }
 
-    const masteryRows = await supabaseRequest(
-      `chemistry_checklist_app_card_mastery?student_id=${eq(studentId)}&topic_id=${eq(topicId)}&is_mastered=eq.true&select=card_id`
-    );
+    let masteryRows = [];
+    try {
+      masteryRows = await supabaseRequest(
+        `chemistry_checklist_app_card_mastery?student_id=${eq(studentId)}&topic_id=${eq(topicId)}&select=card_id,is_mastered,highlight_state`
+      );
+    } catch (error) {
+      if (!(error instanceof SupabaseApiError) || !String(error.body && error.body.code || "").includes("42703")) {
+        throw error;
+      }
+      masteryRows = await supabaseRequest(
+        `chemistry_checklist_app_card_mastery?student_id=${eq(studentId)}&topic_id=${eq(topicId)}&select=card_id,is_mastered`
+      );
+    }
     const interactionRows = await supabaseRequest(
       `chemistry_checklist_app_topic_interactions?student_id=${eq(studentId)}&topic_id=${eq(topicId)}&select=first_flipped_at&limit=1`
     );
+    const highlights = {};
+    (Array.isArray(masteryRows) ? masteryRows : []).forEach((row) => {
+      if ((row.highlight_state === "yellow" || row.highlight_state === "green") && row.card_id) {
+        highlights[row.card_id] = row.highlight_state;
+      }
+    });
 
     return sendJson(res, 200, {
-      masteredCardIds: Array.isArray(masteryRows) ? masteryRows.map((row) => row.card_id) : [],
+      masteredCardIds: Array.isArray(masteryRows) ? masteryRows.filter((row) => row.is_mastered).map((row) => row.card_id) : [],
+      highlights,
       interacted: Array.isArray(interactionRows) && interactionRows.length > 0
     });
   } catch (error) {

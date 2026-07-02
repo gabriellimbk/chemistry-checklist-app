@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260702r-student-persistence-fix";
+const assetVersion = "20260702r-highlight-persistence";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -97,6 +97,14 @@ async function loadStudentTopicState() {
         }
       });
     }
+    if (data.highlights && typeof data.highlights === "object" && !Array.isArray(data.highlights)) {
+      highlightState.clear();
+      Object.entries(data.highlights).forEach(([sectionKey, mode]) => {
+        if (typeof sectionKey === "string" && (mode === "yellow" || mode === "green")) {
+          highlightState.set(sectionKey, mode);
+        }
+      });
+    }
     topicInteractionRecorded = Boolean(data.interacted);
   } catch (error) {
     console.warn("Unable to load student topic state", error);
@@ -133,6 +141,24 @@ async function syncCardMastery(sectionKey, isMastered) {
     });
   } catch (error) {
     console.warn("Unable to save mastery state", error);
+  }
+}
+
+async function syncCardHighlight(sectionKey, highlightMode) {
+  if (teacherMode || !getTopicId()) {
+    return;
+  }
+  try {
+    await apiJson("/api/set-card-highlight", {
+      method: "POST",
+      body: JSON.stringify(withStudentId({
+        topic_id: getTopicId(),
+        card_id: sectionKey,
+        highlight_state: highlightMode || null
+      }))
+    });
+  } catch (error) {
+    console.warn("Unable to save highlight state", error);
   }
 }
 
@@ -2107,6 +2133,7 @@ function cycleHighlightState(article, sectionKey) {
 
   applyHighlightState(article, sectionKey);
   publishProgress(getProgressTotal(), masteryState.size);
+  syncCardHighlight(sectionKey, nextMode || null);
 }
 
 function parseExtensionMarkdown(markdown) {
