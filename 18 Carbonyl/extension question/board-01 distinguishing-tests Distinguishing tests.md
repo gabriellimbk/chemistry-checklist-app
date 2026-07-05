@@ -7,4 +7,4 @@ Answer: An orange precipitate forms.
 Answer: Aldehydes give a silver mirror with Tollens' reagent.
 
 3. What type of aldehyde gives a positive Fehling's test?
-Answer: Aliphatic aldehydes give a brick-red precipitate of Cu₂O.
+Answer: Aliphatic aldehydes give a red-brown precipitate of Cu₂O.

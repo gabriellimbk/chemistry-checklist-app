@@ -327,7 +327,7 @@
           "extensionQuestions": [
             {
               "question": "After heating with NaOH(aq), acidifying with HNO₃(aq), and adding AgNO₃(aq), what precipitate colours identify CH₃Cl, CH₃Br, and CH₃I?",
-              "answer": "CH₃Cl: white ppt of AgCl.\nCH₃Br: cream ppt of AgBr.\nCH₃I: yellow ppt of AgI."
+              "answer": "CH₃Cl: white ppt of AgCl.\nCH₃Br: pale cream ppt of AgBr.\nCH₃I: yellow ppt of AgI."
             },
             {
               "question": "Using ethanolic AgNO₃ and warming, which methyl halide reacts fastest and which reacts slowest?",
@@ -335,7 +335,7 @@
             },
             {
               "question": "How can CH₃Br be distinguished from bromobenzene using these tests?",
-              "answer": "CH₃Br gives a cream precipitate of AgBr, whereas bromobenzene gives no precipitate because its C–Br bond is strengthened and has partial double-bond character."
+              "answer": "CH₃Br gives a pale cream precipitate of AgBr, whereas bromobenzene gives no precipitate because its C–Br bond is strengthened and has partial double-bond character."
             }
           ]
         }
