@@ -135,6 +135,7 @@
   <script src="topics.js?v=20260620r-default-zoom-75"></script>
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
+    const defaultTopicFolder = "02 Atomic Structure";
     const progressStoragePrefix = "summary-map-progress:";
     const topicPageVersion = "20260702r-highlight-persistence";
     const studentClassStorageKey = "chemistry-checklist-v2.studentClass";
@@ -270,6 +271,9 @@
       const folder = decodeURIComponent(raw);
       return topics.find((topic) => topic.folder === folder || topic.code === folder);
     }
+    function defaultTopic() {
+      return topics.find((topic) => topic.folder === defaultTopicFolder) || topics[0];
+    }
     function renderTopicList() {
       topicList.innerHTML = "";
       topics.forEach((topic) => {
@@ -306,7 +310,8 @@
         studentMeta.textContent = studentProfile.class_name;
         renderTopicList();
         const requestedTopic = topicFromHash();
-        const firstTopic = requestedTopic && effectiveUnlock(requestedTopic) ? requestedTopic : topics.find(effectiveUnlock);
+        const preferredTopic = defaultTopic();
+        const firstTopic = requestedTopic && effectiveUnlock(requestedTopic) ? requestedTopic : [preferredTopic, ...topics].filter(Boolean).find(effectiveUnlock);
         if (firstTopic) {
           setActiveTopic(firstTopic, false);
         } else {

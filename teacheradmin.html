@@ -144,6 +144,7 @@
   <script src="topics.js?v=20260620r-default-zoom-75"></script>
   <script>
     const topics = window.CHEMISTRY_TOPICS || [];
+    const defaultTopicFolder = "02 Atomic Structure";
     const topicPageVersion = "20260702r-checklist-labels";
     const menuButton = document.getElementById("menuButton");
     const closeButton = document.getElementById("closeButton");
@@ -216,6 +217,9 @@
       const folder = decodeURIComponent(raw);
       return topics.find((topic) => topic.folder === folder || topic.code === folder);
     }
+    function defaultTopic() {
+      return topics.find((topic) => topic.folder === defaultTopicFolder) || topics[0];
+    }
     function renderTopicList() {
       topicList.innerHTML = "";
       topics.forEach((topic) => {
@@ -246,7 +250,7 @@
       teacherData = await apiJson("/api/teacher-data");
       renderClassSelect();
       renderTopicList();
-      setActiveTopic(topicFromHash() || topics[0], false);
+      setActiveTopic(topicFromHash() || defaultTopic(), false);
     }
     function openUnlockModal() {
       unlockTitle.textContent = scope() === "all" ? "Unlock topics for all classes" : `Unlock topics for ${selectedClassName()}`;
@@ -303,7 +307,7 @@
         loginError.textContent = error.message || "Unable to log in.";
       }
     });
-    classSelect.addEventListener("change", () => { renderTopicList(); setActiveTopic(topics.find((topic) => topic.folder === activeFolder) || topics[0], false); });
+    classSelect.addEventListener("change", () => { renderTopicList(); setActiveTopic(topics.find((topic) => topic.folder === activeFolder) || defaultTopic(), false); });
     unlockButton.addEventListener("click", openUnlockModal);
     unlockClose.addEventListener("click", closeUnlockModal);
     unlockCancel.addEventListener("click", closeUnlockModal);
