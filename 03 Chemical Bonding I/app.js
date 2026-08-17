@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260702r-highlight-persistence";
+const assetVersion = "20260817r-main-board-update";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -764,14 +764,30 @@ function publishProgress(total, masteredCount) {
   }
 }
 
+function getChemicalBondingControlGutter(parentId) {
+  if (parentId === "application-of-vsepr-2") {
+    return 80;
+  }
+  return 56;
+}
+
+function getChemicalBondingParentWidthExtra(parentId) {
+  return parentId === "application-of-vsepr-2" ? 20 : 0;
+}
+
+function getChemicalBondingChildYOffset(parentId) {
+  return parentId === "application-of-vsepr-2" || parentId === "further-classification-of-bonds" ? 16 : 0;
+}
+
 function getBoardDisplayLayout(board) {
   if (boardDisplayLayouts.has(board)) {
     return boardDisplayLayouts.get(board);
   }
 
+  const topicCode = topicData && topicData.code;
   const layout = getBoardLayout(board);
   const railWidth = Math.max(72, board.width * 0.035);
-  const rowGap = Math.max(44, board.height * 0.038);
+  const rowGap = 40;
   const minColumnGap = Math.max(28, railWidth * 0.34);
   const maxColumnGap = Math.max(minColumnGap, railWidth * 0.37);
   const displayCards = [
@@ -889,6 +905,27 @@ function getBoardDisplayLayout(board) {
     cardBounds.set(card.id, { x: metric.x, y: displayY, w: metric.w, h: metric.h });
     maxBottom = Math.max(maxBottom, displayY + metric.h);
   });
+
+  if (topicCode === "03") {
+    const chemicalParentIds = new Set([
+      "application-of-vsepr-2",
+      "structure-and-bonding-2",
+      "further-classification-of-bonds",
+      "intermolecular-forces-of-attraction-imf"
+    ]);
+    getBoardLayout(board).staticParents.forEach(({ parent, children }) => {
+      if (!chemicalParentIds.has(parent.id) || children.length < 2) {
+        return;
+      }
+      const parentBounds = cardBounds.get(parent.id);
+      if (!parentBounds) {
+        return;
+      }
+      const controlGutter = getChemicalBondingControlGutter(parent.id);
+      parentBounds.w += controlGutter * children.length + getChemicalBondingParentWidthExtra(parent.id);
+      maxRight = Math.max(maxRight, parentBounds.x + parentBounds.w + railWidth);
+    });
+  }
 
   const displayLayout = { expandedWidth: maxRight, expandedHeight: maxBottom, cardBounds };
   boardDisplayLayouts.set(board, displayLayout);
@@ -1746,17 +1783,20 @@ function getManualBoardDisplayLayout(board, metrics, railWidth, rowGap, minColum
       const [further, imf, melting, solubility] = required;
       const leftMargin = Math.max(0, Math.min(...metrics.map((metric) => metric.x)));
       const bottomRowWidth = melting.w + railWidth + minColumnGap + solubility.w + railWidth;
-      const targetWidth = Math.max(further.w, imf.w, bottomRowWidth);
+      const controlGutter = 56;
+      const parentGap = rowGap + 20;
+      const bottomRowShift = parentGap - rowGap;
+      const targetWidth = Math.max(further.w, imf.w, bottomRowWidth) + controlGutter * 4;
       const parentWidth = targetWidth - railWidth * 0.28;
       const targetRight = leftMargin + targetWidth;
       const cardBounds = new Map();
 
       cardBounds.set(further.card.id, { x: leftMargin, y: further.y, w: parentWidth, h: further.h });
-      cardBounds.set(imf.card.id, { x: leftMargin, y: imf.y + rowGap, w: parentWidth, h: imf.h });
-      cardBounds.set(melting.card.id, { x: leftMargin, y: melting.y + rowGap * 2, w: melting.w, h: melting.h });
+      cardBounds.set(imf.card.id, { x: leftMargin, y: imf.y + parentGap, w: parentWidth, h: imf.h });
+      cardBounds.set(melting.card.id, { x: leftMargin, y: melting.y + rowGap * 2 + bottomRowShift, w: melting.w, h: melting.h });
       cardBounds.set(solubility.card.id, {
-        x: targetRight - railWidth - solubility.w,
-        y: solubility.y + rowGap * 2,
+        x: targetRight - railWidth - solubility.w - 210,
+        y: solubility.y + rowGap * 2 + bottomRowShift,
         w: solubility.w,
         h: solubility.h
       });
@@ -1791,7 +1831,11 @@ function getStaticParentFrame(parent, children) {
     "delocalisation-of-electrons-2": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
     "stereoisomerism": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
     "predicting-precipitation-quantitative": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
-    "e-cell-and-spontaneity-parent": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 }
+    "e-cell-and-spontaneity-parent": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
+    "application-of-vsepr-2": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
+    "structure-and-bonding-2": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
+    "further-classification-of-bonds": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 },
+    "intermolecular-forces-of-attraction-imf": { bodyX: 0, bodyY: 0, bodyW: 1, bodyH: 1 }
   };
   const idPreset = presetsById[parent.id];
   if (idPreset) {
@@ -1840,6 +1884,14 @@ function getStaticParentFrame(parent, children) {
 }
 
 function getGroupedSlotOverrides(parent) {
+  if ([
+    "application-of-vsepr-2",
+    "structure-and-bonding-2",
+    "further-classification-of-bonds",
+    "intermolecular-forces-of-attraction-imf"
+  ].includes(parent.id)) {
+    return null;
+  }
   if (parent.id === "application-of-vsepr-2") {
     return {
       "example-1": { x: 0.022, y: 0.071, w: 0.2735, h: 0.8 },
@@ -1929,6 +1981,39 @@ function getGroupedSlotBounds(card, contentBox, parent, board) {
   const relY = (card.questionBbox[1] - contentBox.y) / contentBox.h;
   const relW = card.questionBbox[2] / contentBox.w;
   const relH = card.questionBbox[3] / contentBox.h;
+
+  const chemicalChildOrder = {
+    "application-of-vsepr-2": ["example-1", "example-2", "example-3"],
+    "structure-and-bonding-2": [
+      "giant-ionic-lattice",
+      "giant-metallic-lattice",
+      "giant-molecular-structure",
+      "simple-molecular-structure"
+    ],
+    "further-classification-of-bonds": [
+      "sigma-and-pi-bonds",
+      "dative-covalent-bond",
+      "ionic-bond-with-covalent-character",
+      "polar-bonds"
+    ],
+    "intermolecular-forces-of-attraction-imf": ["id-id", "pd-pd", "h-bond"]
+  };
+  const order = chemicalChildOrder[parent.id];
+  const slotIndex = order ? order.indexOf(card.id) : -1;
+  const parentBounds = order ? getBoardDisplayLayout(board).cardBounds.get(parent.id) : null;
+  const controlGutter = getChemicalBondingControlGutter(parent.id);
+  const baseParentWidth = parentBounds
+    ? Math.max(0.001, parentBounds.w - controlGutter * order.length - getChemicalBondingParentWidthExtra(parent.id))
+    : 0;
+  if (slotIndex >= 0 && parentBounds) {
+    const fitted = fitGroupedSlotToCrop(card, { x: relX, y: relY, w: relW, h: relH }, baseParentWidth / Math.max(0.001, parentBounds.h));
+    return {
+      x: (fitted.x * baseParentWidth + slotIndex * controlGutter) / Math.max(0.001, parentBounds.w),
+      y: fitted.y + getChemicalBondingChildYOffset(parent.id) / Math.max(0.001, parentBounds.h),
+      w: (fitted.w * baseParentWidth) / Math.max(0.001, parentBounds.w),
+      h: fitted.h
+    };
+  }
 
   return {
     x: relX,
