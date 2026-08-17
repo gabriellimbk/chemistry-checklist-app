@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260702r-highlight-persistence";
+const assetVersion = "20260817r-main-board-update";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -771,7 +771,7 @@ function getBoardDisplayLayout(board) {
 
   const layout = getBoardLayout(board);
   const railWidth = Math.max(72, board.width * 0.035);
-  const rowGap = Math.max(44, board.height * 0.038);
+  const rowGap = 40;
   const minColumnGap = Math.max(28, railWidth * 0.34);
   const maxColumnGap = Math.max(minColumnGap, railWidth * 0.37);
   const displayCards = [
@@ -1130,32 +1130,25 @@ function getManualBoardDisplayLayout(board, metrics, railWidth, rowGap, minColum
   if (topicCode === "11" && board.id === "board-01") {
     const ids = {
       reactions: "reactions",
-      mechanism1: "mechanism",
-      mechanism2: "mechanism-2",
-      mechanism3: "mechanism-3"
+      mechanism1: "mechanism-with-br-2-l",
+      mechanism2: "mechanism-with-br-2-aq"
     };
     const required = Object.values(ids).map((id) => getMetricById(metrics, id));
     if (required.every(Boolean)) {
-      const [reactions, mechanism1, mechanism2, mechanism3] = required;
+      const [reactions, mechanism1, mechanism2] = required;
       const leftMargin = Math.max(0, Math.min(...metrics.map((metric) => metric.x)));
       const topY = Math.max(0, Math.min(...metrics.map((metric) => metric.y)));
       const verticalGap = 40;
-      const rightX = leftMargin + reactions.w + railWidth + minColumnGap;
       const cardBounds = new Map();
 
       cardBounds.set(reactions.card.id, { x: leftMargin, y: topY, w: reactions.w, h: reactions.h });
-      cardBounds.set(mechanism1.card.id, { x: rightX, y: topY, w: mechanism1.w, h: mechanism1.h });
+      const mechanismY = topY + reactions.h + verticalGap;
+      cardBounds.set(mechanism1.card.id, { x: leftMargin, y: mechanismY, w: mechanism1.w, h: mechanism1.h });
       cardBounds.set(mechanism2.card.id, {
-        x: rightX,
-        y: topY + mechanism1.h + verticalGap,
+        x: leftMargin + mechanism1.w + railWidth + minColumnGap,
+        y: mechanismY,
         w: mechanism2.w,
         h: mechanism2.h
-      });
-      cardBounds.set(mechanism3.card.id, {
-        x: rightX,
-        y: topY + mechanism1.h + verticalGap + mechanism2.h + verticalGap,
-        w: mechanism3.w,
-        h: mechanism3.h
       });
 
       const maxRight = Math.max(...Array.from(cardBounds.values()).map((bounds) => bounds.x + bounds.w + railWidth));
@@ -1175,14 +1168,13 @@ function getManualBoardDisplayLayout(board, metrics, railWidth, rowGap, minColum
       const [elimination, redox, physical] = required;
       const leftMargin = Math.max(0, Math.min(...metrics.map((metric) => metric.x)));
       const topY = Math.max(0, Math.min(...metrics.map((metric) => metric.y)));
-      const horizontalGap = 130;
       const verticalGap = 40;
-      const rightX = leftMargin + elimination.w + railWidth + horizontalGap;
       const cardBounds = new Map();
 
       cardBounds.set(elimination.card.id, { x: leftMargin, y: topY, w: elimination.w, h: elimination.h });
-      cardBounds.set(redox.card.id, { x: rightX, y: topY, w: redox.w, h: redox.h });
-      cardBounds.set(physical.card.id, { x: rightX, y: topY + redox.h + verticalGap, w: physical.w, h: physical.h });
+      const redoxY = topY + elimination.h + verticalGap;
+      cardBounds.set(redox.card.id, { x: leftMargin, y: redoxY, w: redox.w, h: redox.h });
+      cardBounds.set(physical.card.id, { x: leftMargin, y: redoxY + redox.h + verticalGap, w: physical.w, h: physical.h });
 
       const maxRight = Math.max(...Array.from(cardBounds.values()).map((bounds) => bounds.x + bounds.w + railWidth));
       const maxBottom = Math.max(...Array.from(cardBounds.values()).map((bounds) => bounds.y + bounds.h));

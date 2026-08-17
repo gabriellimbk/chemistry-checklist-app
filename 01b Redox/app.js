@@ -28,7 +28,7 @@ const audioState = {};
 const masteryState = new Set();
 const highlightState = new Map();
 const boardDisplayLayouts = new WeakMap();
-const assetVersion = "20260702r-highlight-persistence";
+const assetVersion = "20260817r-main-board-update";
 const progressStoragePrefix = "summary-map-progress:";
 const boardZoomStoragePrefix = "summary-map-board-zoom-75:";
 const accessParams = new URLSearchParams(window.location.search);
@@ -771,7 +771,7 @@ function getBoardDisplayLayout(board) {
 
   const layout = getBoardLayout(board);
   const railWidth = Math.max(72, board.width * 0.035);
-  const rowGap = Math.max(44, board.height * 0.038);
+  const rowGap = 40;
   const minColumnGap = Math.max(28, railWidth * 0.34);
   const maxColumnGap = Math.max(minColumnGap, railWidth * 0.37);
   const displayCards = [

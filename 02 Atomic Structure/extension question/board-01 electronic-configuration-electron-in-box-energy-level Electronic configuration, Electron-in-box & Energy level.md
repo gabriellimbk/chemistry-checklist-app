@@ -5,3 +5,6 @@ Answer: Electrons fill lower-energy orbitals first, following the order shown in
 
 2. What rule applies when placing electrons into orbitals of the same energy?
 Answer: Electrons occupy degenerate orbitals singly before pairing, with opposite spins when paired.
+
+3. What is the key rule or starting point to follow when writing the electronic configuration of transition metal ions?
+Answer: Always start by writing the electronic configuration of the neutral atom first.

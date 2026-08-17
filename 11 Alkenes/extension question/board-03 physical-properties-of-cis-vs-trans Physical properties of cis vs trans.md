@@ -1,4 +1,10 @@
 # Physical properties of cis vs trans
 
-1. Why do cis and trans isomers have different melting points?
-Answer: Because trans isomers pack more efficiently than cis isomers, resulting in trans isomers being packed more closely together and having stronger intermolecular forces of attraction.
+1. Explain why trans isomers are generally more stable than their corresponding cis isomers.
+Answer: Trans isomers are generally more stable due to reduced steric hindrance. In the cis isomer, bulky groups are on the same side of the double bond, leading to electron cloud repulsion between them. In the trans isomer, these bulky groups are on opposite sides, minimising this repulsion and resulting in a lower energy, more stable conformation.
+
+2. When is E/Z nomenclature necessary for alkenes, and how does it differ from cis/trans nomenclature?
+Answer: E/Z nomenclature is necessary when an alkene has four different substituents attached to the carbons of the double bond, or when cis/trans assignment is ambiguous (e.g., if there isn't a clear 'same' or 'opposite' side for identical groups). It assigns priority to the substituents on each carbon using Cahn-Ingold-Prelog rules. If the two higher priority groups are on opposite sides, it is designated E (entgegen); if they are on the same side, it is Z (zusammen). Cis/trans only works reliably when there are two identical groups on each carbon of the double bond, or when one carbon has two identical groups.
+
+3. Consider the reaction of cis-but-2-ene and trans-but-2-ene with hydrogen gas in the presence of a nickel catalyst. Would their rates of reaction be significantly different? Explain your reasoning.
+Answer: Their rates of reaction with hydrogen gas in the presence of a nickel catalyst would likely be very similar. Both cis-but-2-ene and trans-but-2-ene have the same carbon-carbon double bond, which is the reactive functional group for catalytic hydrogenation. The mechanism involves the adsorption of the alkene and hydrogen onto the catalyst surface, followed by the addition of hydrogen atoms across the double bond. While their physical properties differ, the fundamental chemical reactivity of the double bond itself is largely the same for both isomers in this type of reaction. The product for both would be butane.

@@ -1,6 +1,6 @@
 window.CHEMISTRY_TOPICS = [
-  { code: "01.", name: "Redox Reactions", folder: "01b Redox", total: 6 },
-  { code: "02.", name: "Atomic Structure", folder: "02 Atomic Structure", total: 6 },
+  { code: "01.", name: "Redox Reactions", folder: "01b Redox", total: 5 },
+  { code: "02.", name: "Atomic Structure", folder: "02 Atomic Structure", total: 5 },
   { code: "03.", name: "Chemical Bonding (I)", folder: "03 Chemical Bonding I", total: 18 },
   { code: "04.", name: "The Gaseous State", folder: "04 Gaseous State", total: 6 },
   { code: "05a.", name: "Chemical Energetics (I)", folder: "05a Energetics I", total: 5 },
@@ -10,7 +10,7 @@ window.CHEMISTRY_TOPICS = [
   { code: "08.", name: "Chemical Bonding (II)", folder: "08 Chemical Bonding II", total: 5 },
   { code: "09.", name: "Introduction to Organic Chemistry", folder: "09 Intro to Organic Chemistry", total: 9 },
   { code: "10.", name: "Alkanes", folder: "10 Alkanes", total: 5 },
-  { code: "11.", name: "Alkenes", folder: "11 Alkenes", total: 12 },
+  { code: "11.", name: "Alkenes", folder: "11 Alkenes", total: 11 },
   { code: "12a.", name: "Periodic Table (I)", folder: "12 Periodic Table I", total: 7 },
   { code: "12b.", name: "Periodic Table (II)", folder: "13 Periodic Table II", total: 10 },
   { code: "13.", name: "Arenes", folder: "14 Arene", total: 6 },
